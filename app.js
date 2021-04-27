@@ -1,6 +1,7 @@
-var express = require('express')
-var bodyParser = require('body-parser')
-var mysql = require('mysql2')
+var express = require('express');
+const path = require('path');
+var bodyParser = require('body-parser');
+var mysql = require('mysql2');
 
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -12,11 +13,13 @@ dotenv.config({
 });
 
 var connection = mysql.createConnection({
-    host: '127.0.0.1',
-    user: 'newuser',
-    password: 'password',
-    database: 'articulosdb'
-})
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE
+});
+
+
 connection.connect((error) => {
     if (error) {
         console.log('El error de conexion es : ' + error);
@@ -26,7 +29,7 @@ connection.connect((error) => {
 });
 
 app.get('/', (req, res) => {
-    res.send('Pagina de inicio')
+    res.send('Pagina de inicio');
 })
 
 app.get('/api/articulos', (req, res) => {
@@ -56,16 +59,19 @@ app.get('/api/articulos/:id', (req, res) => {
     })
 })
 
-app.post('api/articulos', (req, res) => {
+app.post('/api/articulos', (req, res) => {
     const descripcion = req.body.descripcion;
     const precio = req.body.precio;
     const stock = req.body.stock;
-    console.log(descripcion);
+    //const contentType = req.headers['content-type'];
+    console.log(req.body);
     connection.query('INSERT INTO articulos SET ?', { descripcion: descripcion, precio: precio, stock: stock }, (error, results) => {
         if (error) {
             console.log("Ha ocurrido un error: "+error);
         } else {
-            res.send('results');
+            res.json({
+            	datos: 'Registro guardado con exito'
+            })
         }
     })
 })
@@ -104,11 +110,13 @@ app.put('/api/articulos/:id', (req, res) =>{
 	})
 })
 
-app.delete('api/articulos/:id', (req, res) => {
-	connection.query("DELETE FROM * articulos WHERE id = ?", [req.params.id], (error, results)=>{
+app.delete('/api/articulos/:id', (req,res) => {
+	var id = req.params.id;
+	console.log(id)
+	connection.query("DELETE FROM articulos WHERE id = ?", [id], (error, results)=>{
 		if (error) {
 			throw error;
-		} else{
+		} else {
 			res.send(results);
 		}
 	})
