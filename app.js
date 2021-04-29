@@ -1,10 +1,12 @@
 var express = require('express');
 const path = require('path');
+const cors = require('cors')
 var bodyParser = require('body-parser');
 var mysql = require('mysql2');
 
 var app = express();
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 const dotenv = require('dotenv');
@@ -18,7 +20,6 @@ var connection = mysql.createConnection({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE
 });
-
 
 connection.connect((error) => {
     if (error) {
@@ -37,7 +38,7 @@ app.get('/api/articulos', (req, res) => {
         if (error) {
             throw error;
         } else {
-            res.send(filas);
+            res.json(filas);
         }
     })
 })
@@ -59,7 +60,7 @@ app.get('/api/articulos/:id', (req, res) => {
     })
 })
 
-app.post('/api/articulos', (req, res) => {
+/*app.post('/api/articulos', (req, res) => {
     const descripcion = req.body.descripcion;
     const precio = req.body.precio;
     const stock = req.body.stock;
@@ -69,31 +70,29 @@ app.post('/api/articulos', (req, res) => {
         if (error) {
             console.log("Ha ocurrido un error: "+error);
         } else {
-            res.json({
-            	datos: 'Registro guardado con exito'
-            })
+            object.assign(data, {id: results.insertId})
+            res.send(data)
         }
     })
-})
+})*/
 
 
-/*app.post('api/articulos', (req, res) => {
+app.post('/api/articulos', (req, res) => {
     var data = {
         descripcion: req.body.descripcion,
         precio: req.body.precio,
         stock: req.body.stock
     };
     var sql = "INSERT INTO articulos SET ?";
-    console.log(dato);
     connection.query(sql, data, function(error, results) {
         if (error) {
             throw error;
         } else {
-            res.send(results);
-            console.log(results)
+            object.assign(data, {id: results.insertId})
+            res.send(data)
         }
     })
-})*/
+})
 
 app.put('/api/articulos/:id', (req, res) =>{
 	var id = req.body.id;
@@ -126,3 +125,4 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log("Servidor ejecutandose por el PORT: "+port)
 })
+
